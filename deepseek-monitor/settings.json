@@ -1,0 +1,10 @@
+{
+  "proxy_port": 7890,
+  "proxy_host": "127.0.0.1",
+  "model": "deepseek-chat",
+  "daily_budget": 1.00,
+  "monthly_budget": 30.00,
+  "overlay_position": "top-right",
+  "refresh_interval_seconds": 2,
+  "data_file": "usage_data.json"
+}
