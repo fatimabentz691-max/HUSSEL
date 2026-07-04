@@ -2,13 +2,13 @@
 DeepSeek Token 用量监控 — 悬浮窗
 
 真透明圆角 · Win11 原生圆角 · 发光边框 · 超大醒目字体
-核心：用 Layered Window (WS_EX_LAYERED) + UpdateLayeredWindow
-        做像素级 alpha 透明圆角窗口
-方案：Tkinter overrideredirect + DWM 圆角扩展
+核心：用 SetWindowRgn 裁剪窗口为圆角矩形，所有 Windows 版本通用
 """
 
 from __future__ import annotations
 
+import ctypes
+import ctypes.wintypes
 import tkinter as tk
 from typing import Callable, TYPE_CHECKING
 
@@ -22,16 +22,34 @@ if TYPE_CHECKING:
     from token_tracker import TokenTracker
 
 
-# ── Win32 API 辅助：强制 DWM 圆角 ────────────────────────────
+# ── Win32 API 辅助 ────────────────────────────────────────────
 
 
-def _enable_win11_rounded(hwnd: int) -> bool:
+def _set_rounded_region(hwnd: int, w: int, h: int, r: int) -> bool:
     """
-    在 Windows 11 上为 overrideredirect 窗口启用原生圆角。
-    DwmSetWindowAttribute with DWMWA_WINDOW_CORNER_PREFERENCE = 33.
-    DWMWCP_ROUND = 2
+    使用 SetWindowRgn 将窗口裁剪为圆角矩形。
+    适用于 overrideredirect 窗口（DWM 不为其提供原生圆角）。
+    返回 True 表示成功。
     """
-    import ctypes, ctypes.wintypes
+    try:
+        # CreateRoundRectRgn(left, top, right, bottom, ellipse_w, ellipse_h)
+        hrgn = ctypes.windll.gdi32.CreateRoundRectRgn(
+            0, 0, w + 1, h + 1, r * 2, r * 2,
+        )
+        # SetWindowRgn 接管 hrgn 所有权，不需手动 DeleteObject
+        ctypes.windll.user32.SetWindowRgn(
+            ctypes.wintypes.HWND(hwnd), hrgn, True,
+        )
+        return True
+    except Exception:
+        return False
+
+
+def _enable_dwm_rounded(hwnd: int) -> bool:
+    """
+    在 Windows 11 上为普通（非 overrideredirect）窗口启用原生圆角。
+    DWMWA_WINDOW_CORNER_PREFERENCE = 33, DWMWCP_ROUND = 2.
+    """
     DWMWA_WINDOW_CORNER_PREFERENCE = 33
     DWMWCP_ROUND = 2
     try:
@@ -46,46 +64,11 @@ def _enable_win11_rounded(hwnd: int) -> bool:
         return False
 
 
-# ── Canvas 圆角背景辅助 ──────────────────────────────────────
-
-
-def _rrect(c: tk.Canvas, x1, y1, x2, y2, r=20, **kw) -> list:
-    """绘制填充圆角矩形."""
-    ids = []
-    d = r * 2
-    ids.append(c.create_rectangle(x1 + r, y1, x2 - r, y2, **kw))
-    ids.append(c.create_rectangle(x1, y1 + r, x2, y2 - r, **kw))
-    ids.append(c.create_arc(x1, y1, x1 + d, y1 + d, start=90, extent=90,
-                             style="pieslice", **kw))
-    ids.append(c.create_arc(x2 - d, y1, x2, y1 + d, start=0, extent=90,
-                             style="pieslice", **kw))
-    ids.append(c.create_arc(x1, y2 - d, x1 + d, y2, start=180, extent=90,
-                             style="pieslice", **kw))
-    ids.append(c.create_arc(x2 - d, y2, x2, y2 - d, start=270, extent=90,
-                             style="pieslice", **kw))
-    return ids
-
-
-def _rrect_stroke(c, x1, y1, x2, y2, r=20, width=1, color="#fff"):
-    """绘制圆角矩形边框."""
-    d = r * 2
-    kw = {"fill": color, "width": width}
-    c.create_line(x1 + r, y1, x2 - r, y1, **kw)
-    c.create_line(x1 + r, y2, x2 - r, y2, **kw)
-    c.create_line(x1, y1 + r, x1, y2 - r, **kw)
-    c.create_line(x2, y1 + r, x2, y2 - r, **kw)
-    akw = {"style": "arc", "outline": color, "width": width}
-    c.create_arc(x1, y1, x1 + d, y1 + d, start=90, extent=90, **akw)
-    c.create_arc(x2 - d, y1, x2, y1 + d, start=0, extent=90, **akw)
-    c.create_arc(x1, y2 - d, x1 + d, y2, start=180, extent=90, **akw)
-    c.create_arc(x2 - d, y2, x2, y2 - d, start=270, extent=90, **akw)
-
-
 # ── 悬浮窗主类 ──────────────────────────────────────────────
 
 
 class OverlayWindow:
-    """圆角悬浮窗 (Windows 11 原生圆角 + Canvas 内部圆角)."""
+    """圆角悬浮窗 (SetWindowRgn 裁剪 + Canvas 内绘制)."""
 
     def __init__(
         self,
@@ -144,36 +127,24 @@ class OverlayWindow:
         self._canvas.bind("<Button-3>", self._on_rclick)
 
     def _apply_rounded(self):
-        """尝试启用 DWM 圆角；失败则用 Canvas 绘制圆角边框."""
-        import ctypes
-        self._has_dwm_round = _enable_win11_rounded(
-            ctypes.windll.user32.GetParent(self._canvas.winfo_id())
-        )
-        if self._has_dwm_round:
-            # DWM 圆角生效，不需要额外画角修饰
-            pass
-        else:
-            # 无 DWM 圆角，用透明色键模拟
-            pass
+        """使用 SetWindowRgn 裁剪窗口为圆角矩形."""
+        hwnd = ctypes.windll.user32.GetParent(self._canvas.winfo_id())
+        self._has_rounded = _set_rounded_region(hwnd, self._W, self._H, self._r)
 
-        # 无论如何都画内部圆角边框让内容区看起来圆润
-        c = self._canvas
-        W, H, r = self._W, self._H, self._r
-        # 四角弧形填充（和背景同色），遮住 Canvas 的直角
-        d = r * 2
-        corner_fill = config.BG_MAIN
-        # 左上
-        c.create_arc(0, 0, d, d, start=90, extent=90,
-                     style="pieslice", fill=corner_fill, outline="")
-        # 右上
-        c.create_arc(W - d, 0, W, d, start=0, extent=90,
-                     style="pieslice", fill=corner_fill, outline="")
-        # 左下
-        c.create_arc(0, H - d, d, H, start=180, extent=90,
-                     style="pieslice", fill=corner_fill, outline="")
-        # 右下
-        c.create_arc(W - d, H - d, W, H, start=270, extent=90,
-                     style="pieslice", fill=corner_fill, outline="")
+        if not self._has_rounded:
+            # 极端降级：用 Canvas 弧线填充四角
+            c = self._canvas
+            W, H, r = self._W, self._H, self._r
+            d = r * 2
+            cf = config.BG_MAIN
+            c.create_arc(0, 0, d, d, start=90, extent=90,
+                         style="pieslice", fill=cf, outline="")
+            c.create_arc(W - d, 0, W, d, start=0, extent=90,
+                         style="pieslice", fill=cf, outline="")
+            c.create_arc(0, H - d, d, H, start=180, extent=90,
+                         style="pieslice", fill=cf, outline="")
+            c.create_arc(W - d, H - d, W, H, start=270, extent=90,
+                         style="pieslice", fill=cf, outline="")
 
     # ══════ 绘制 ═══════════════════════════════════════════════
 
@@ -203,6 +174,18 @@ class OverlayWindow:
                       font=(config.FONT_FAMILY, config.FONT_SIZE_SM),
                       tags="drag")
         cx = W - 18
+        # 刷新按钮
+        self._refresh_btn = c.create_text(cx - 22, title_y, text="⟳",
+                                         fill=config.TEXT_SECONDARY,
+                                         anchor="center",
+                                         font=(config.FONT_FAMILY, config.FONT_SIZE_MD),
+                                         tags="refresh")
+        c.tag_bind("refresh", "<Button-1>", lambda e: self.refresh())
+        c.tag_bind("refresh", "<Enter>",
+                   lambda e: c.itemconfig(self._refresh_btn, fill=config.TEXT_ACCENT))
+        c.tag_bind("refresh", "<Leave>",
+                   lambda e: c.itemconfig(self._refresh_btn, fill=config.TEXT_SECONDARY))
+        # 关闭按钮
         self._close = c.create_text(cx, title_y, text="✕",
                                      fill=config.TEXT_SECONDARY,
                                      anchor="center",
@@ -267,16 +250,17 @@ class OverlayWindow:
         )
         y += 16
 
-        # 预算进度条
+        # 预算进度条 (圆角端点)
         bar_y = y
         bar_h = 5
-        self._budget_bg = c.create_rectangle(
-            px, bar_y, W - px, bar_y + bar_h,
-            fill=config.BG_INPUT, outline="",
+        bar_mid = bar_y + bar_h / 2
+        self._budget_bg = c.create_line(
+            px, bar_mid, W - px, bar_mid,
+            fill=config.BG_INPUT, width=bar_h, capstyle="round",
         )
-        self._budget_fill = c.create_rectangle(
-            px, bar_y, px, bar_y + bar_h,
-            fill=config.GREEN, outline="",
+        self._budget_fill = c.create_line(
+            px, bar_mid, px, bar_mid,
+            fill=config.GREEN, width=bar_h, capstyle="round",
         )
         self._budget_text = c.create_text(
             W - px, bar_y + bar_h + 16, text="",
@@ -435,9 +419,10 @@ class OverlayWindow:
             ratio = min(mc / budget, 1.0) if budget > 0 else 0
             bar_w = W - px * 2
             bc = config.GREEN if ratio < 0.5 else config.ORANGE if ratio < 0.85 else config.RED
+            mid_y = c.coords(self._budget_bg)[1]
             c.coords(self._budget_fill,
-                     px, c.coords(self._budget_bg)[1],
-                     px + int(bar_w * ratio), c.coords(self._budget_bg)[3])
+                     px, mid_y,
+                     px + int(bar_w * ratio), mid_y)
             c.itemconfig(self._budget_fill, fill=bc)
             c.itemconfig(self._budget_text,
                          text=f"预算 {ratio * 100:.0f}%  ¥{mc:.2f}/¥{budget:.0f}")

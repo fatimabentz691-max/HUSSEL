@@ -41,6 +41,9 @@ class ManualDialog:
         self._build()
         self._dlg.protocol("WM_DELETE_WINDOW", self._dlg.destroy)
 
+        # 启用 DWM 原生圆角 (Win11)
+        self._dlg.after(10, self._apply_dwm_rounded)
+
     def _build(self) -> None:
         p = {"padx": 12, "pady": 3}
 
@@ -118,6 +121,22 @@ class ManualDialog:
                   ).pack(side="right")
 
     # ── 辅助 ──────────────────────────────────────────────────────
+
+    def _apply_dwm_rounded(self) -> None:
+        """为对话框启用 DWM 原生圆角 (Win11)."""
+        try:
+            import ctypes, ctypes.wintypes
+            DWMWA_WINDOW_CORNER_PREFERENCE = 33
+            DWMWCP_ROUND = 2
+            hwnd = ctypes.windll.user32.GetParent(self._dlg.winfo_id())
+            ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                ctypes.wintypes.HWND(hwnd),
+                ctypes.c_uint32(DWMWA_WINDOW_CORNER_PREFERENCE),
+                ctypes.byref(ctypes.c_uint32(DWMWCP_ROUND)),
+                ctypes.sizeof(ctypes.c_uint32),
+            )
+        except Exception:
+            pass
 
     def _lbl(self, text: str, parent: tk.Widget | None = None) -> None:
         (parent or self._dlg)
