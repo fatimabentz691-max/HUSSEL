@@ -1,5 +1,6 @@
 """
 DeepSeek Token 用量监控 — 配置常量
+Apple 风格 · 全粗体 · 动态过渡
 """
 
 import os
@@ -14,7 +15,7 @@ DEFAULT_PROXY_PORT = 7890
 PROXY_HOST = "127.0.0.1"
 DEEPSEEK_API_BASE = "https://api.deepseek.com"
 
-# ── 模型定价 (每 1M tokens, USD) ─────────────────────────────────
+# ── 模型定价 ─────────────────────────────────────────────────────
 MODELS = {
     "deepseek-chat": {
         "label": "DeepSeek V3/Flash",
@@ -31,48 +32,54 @@ DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_DAILY_BUDGET = 1.00
 DEFAULT_MONTHLY_BUDGET = 30.00
 
-# ── UI 颜色 ───────────────────────────────────────────────────────
-TRANSPARENT = "#010101"        # 透明色键
+# ── 配色 · macOS Dark ────────────────────────────────────────────
+BG_BASE        = "#0d0d0f"
+BG_MAIN        = "#161618"
+BG_CARD        = "#1e1e22"
+BG_INPUT       = "#26262b"
+BG_HANDLE      = "#0a0a0c"
+BG_HOVER       = "#2a2a30"
 
-BG_MAIN = "#1a1a2e"            # 主背景
-BG_GRADIENT_TOP = "#1e1e38"    # 顶部渐变
-BG_CARD = "#252540"            # 卡片
-BG_INPUT = "#2e2e48"           # 输入框
-BG_HANDLE = "#14142a"          # 拖拽条
-BG_STRIP = "#2a2a4a"           # 统计行背景色块
-TEXT_PRIMARY = "#e8e8f8"       # 主文字
-TEXT_SECONDARY = "#9d9dc8"     # 次要
-TEXT_ACCENT = "#7ec8ff"        # 数值
-TEXT_TITLE = "#f0f0ff"         # 标题
-GREEN = "#4fe381"              # 正常
-YELLOW = "#f5c842"             # 警告
-RED = "#ff5e7a"                # 超支
-ORANGE = "#ff8c42"             # 中间色
-BORDER = "#3d3d5c"             # 边框
-BORDER_OUTER = "#4a4a78"       # 外边框 (发光)
-CHART_BAR = "#5a7ade"          # 柱色
-CHART_BAR_TODAY = "#a78bfa"    # 今日柱色
-SHADOW = "#0d0d1a"             # 阴影
+TEXT_PRIMARY   = "#f5f5f7"
+TEXT_SECONDARY = "#98989d"
+TEXT_TITLE     = "#ffffff"
+TEXT_MUTED     = "#6e6e73"
+
+ACCENT       = "#0a84ff"
+ACCENT_SOFT  = "#409cff"
+
+GREEN        = "#30d158"
+ORANGE       = "#ff9f0a"
+RED          = "#ff453a"
+
+CHART_BAR       = "#2c2c30"
+CHART_BAR_TODAY = "#0a84ff"
+BORDER          = "#2c2c30"
 
 # ── 预算阈值 ──────────────────────────────────────────────────────
-BUDGET_GREEN_PCT = 0.70
+BUDGET_GREEN_PCT  = 0.70
 BUDGET_YELLOW_PCT = 1.00
 
-# ── 窗口尺寸 ──────────────────────────────────────────────────────
-COMPACT_WIDTH = 320
-COMPACT_HEIGHT = 370
-EXPANDED_WIDTH = 370
-EXPANDED_HEIGHT = 540
-OVERLAY_MARGIN = 16
-REFRESH_MS = 2000
-CORNER_RADIUS = 20
-PAD_X = 18
+# ── 窗口尺寸 ─────────────────────────────────────────────────────
+COMPACT_WIDTH  = 340
+COMPACT_HEIGHT = 500
+OVERLAY_MARGIN = 20
+REFRESH_MS     = 2000
+CORNER_RADIUS  = 18
+PAD_X          = 24
 
-# ── 字体 (放大醒目) ───────────────────────────────────────────────
-FONT_FAMILY = "Microsoft YaHei UI"
-FONT_SIZE_XS = 9       # 柱状图标签、底部
-FONT_SIZE_SM = 10      # 副标签
-FONT_SIZE_MD = 12      # 正文数值
-FONT_SIZE_LG = 15      # 标题
-FONT_SIZE_XL = 20      # 主数值 (今日/本月/总计)
-FONT_SIZE_XXL = 28     # 超大数值头部
+# ── 字体 · 全粗体 · 苹果风格 ─────────────────────────────────────
+FONT_FAMILY  = "Microsoft YaHei UI"
+
+# 字号统一 (全部 bold)
+S_BASE   = 11   # 正文标签 / 图表日期 / 底部状态
+S_XL     = 38   # 今日 Token 大数字
+S_LG     = 17   # 今日费用
+S_MD     = 14   # 本月/累计 Token 数
+S_SM     = 12   # 本月/累计 费用
+S_XS     = 10   # 图表上方数值
+
+# ── 动画 ──────────────────────────────────────────────────────────
+ANIM_STEPS    = 12    # 数字滚动的帧数
+ANIM_INTERVAL = 30    # 每帧间隔 (ms)
+ANIM_EASING   = "ease_out"  # 缓动类型

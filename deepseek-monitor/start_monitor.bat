@@ -1,3 +1,3 @@
 @echo off
-cd /d "D:\deepseek-monitor"
-start "" pythonw main.py
+cd /d "%~dp0"
+pythonw main.py

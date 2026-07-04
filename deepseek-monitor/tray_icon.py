@@ -1,7 +1,6 @@
 """
-DeepSeek Token 用量监控 — 系统托盘图标
-
-左键点击切换悬浮窗显示/隐藏，右键展开菜单
+DeepSeek Token Monitor — 系统托盘图标
+Apple 风格 · 深邃暗黑
 """
 
 from __future__ import annotations
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class TrayManager:
-    """系统托盘管理器."""
+    """系统托盘管理器"""
 
     def __init__(
         self,
@@ -32,19 +31,20 @@ class TrayManager:
         self._icon = None
 
     def _create_image(self):
-        """生成 'DS' 托盘图标."""
+        """生成 'DS' 托盘图标 — Apple 风格深色图标 + 系统蓝字"""
         from PIL import Image, ImageDraw
         img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        draw.rounded_rectangle([1, 1, 30, 30], radius=7,
-                               fill="#1e1e2e", outline="#45475a", width=1)
-        draw.text((7, 5), "DS", fill="#89b4fa")
+        # 深黑圆角方块 + Apple 蓝
+        draw.rounded_rectangle([1, 1, 30, 30], radius=8,
+                               fill="#161618", outline="#2c2c30", width=1)
+        draw.text((8, 6), "DS", fill="#0a84ff")
         return img
 
     def _build_menu(self):
         import pystray
         return pystray.Menu(
-            pystray.MenuItem("显示/隐藏", self._toggle_overlay, default=True),
+            pystray.MenuItem("显示 / 隐藏", self._toggle_overlay, default=True),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem(
                 "代理状态",
@@ -55,7 +55,7 @@ class TrayManager:
                     ),
                 ),
             ),
-            pystray.MenuItem("手动录入...", self._trigger_manual),
+            pystray.MenuItem("手动录入…", self._trigger_manual),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("退出", self._quit),
         )

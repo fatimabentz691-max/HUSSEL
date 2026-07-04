@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "model": "deepseek-chat",
+  "daily": {
+    "2026-07-03": {
+      "prompt_tokens": 53117,
+      "completion_tokens": 38547,
+      "total_tokens": 91664,
+      "cache_hit_tokens": 493824,
+      "cache_miss_tokens": 0,
+      "reasoning_tokens": 0,
+      "cost": 0.05290343600000001,
+      "requests": 12
+    },
+    "2026-07-04": {
+      "prompt_tokens": 345186,
+      "completion_tokens": 164200,
+      "total_tokens": 509386,
+      "cache_hit_tokens": 23572224,
+      "cache_miss_tokens": 0,
+      "reasoning_tokens": 0,
+      "cost": 0.5221683959999999,
+      "requests": 248
+    }
+  },
+  "monthly": {
+    "2026-07": {
+      "prompt_tokens": 398303,
+      "completion_tokens": 202747,
+      "total_tokens": 601050,
+      "cache_hit_tokens": 24066048,
+      "cache_miss_tokens": 0,
+      "reasoning_tokens": 0,
+      "cost": 0.5750718319999999,
+      "requests": 260
+    }
+  },
+  "total_all_time": {
+    "prompt_tokens": 398303,
+    "completion_tokens": 202747,
+    "total_tokens": 601050,
+    "cache_hit_tokens": 24066048,
+    "cache_miss_tokens": 0,
+    "reasoning_tokens": 0,
+    "cost": 0.5750718319999999,
+    "requests": 260
+  }
+}
