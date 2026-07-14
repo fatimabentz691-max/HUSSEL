@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"主窗口与悬浮窗口权限","local":true,"windows":["main","floating"],"permissions":["core:default","core:window:allow-set-size","core:window:allow-start-dragging","core:window:allow-start-resize-dragging","dialog:default","notification:default","autostart:default","opener:default"]}}

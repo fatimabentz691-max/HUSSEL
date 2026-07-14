@@ -1,0 +1,23 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Check frontend
+        run: npm run build
+      - name: Test desktop backend
+        run: cargo test --manifest-path src-tauri/Cargo.toml
