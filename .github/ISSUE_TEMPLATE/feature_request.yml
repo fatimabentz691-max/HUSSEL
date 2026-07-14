@@ -1,0 +1,22 @@
+name: 功能建议
+description: 建议新平台、新图表或交互改进
+title: '[Feature] '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 需要解决的问题
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: 期望方案
+    validations:
+      required: true
+  - type: input
+    id: official-docs
+    attributes:
+      label: 官方资料
+      description: 涉及模型、计价或账单接口时请提供官方文档链接。

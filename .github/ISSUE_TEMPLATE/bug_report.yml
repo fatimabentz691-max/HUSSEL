@@ -1,0 +1,40 @@
+name: Bug 报告
+description: 报告可以稳定复现的问题
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: 请勿上传 API Key、数据库、迁移包或未脱敏会话内容。
+  - type: input
+    id: version
+    attributes:
+      label: Token Manager 版本
+      placeholder: 例如 0.2.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本
+      placeholder: 例如 Windows 11 24H2 x64
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请写出最短、稳定的复现步骤。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: 数据来源
+      description: Codex 本地日志、本地代理、DeepSeek 官方余额或其他。

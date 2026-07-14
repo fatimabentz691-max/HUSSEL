@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "主窗口与悬浮窗口权限",
+  "windows": ["main", "floating"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-size",
+    "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
+    "dialog:default",
+    "notification:default",
+    "autostart:default",
+    "opener:default"
+  ]
+}
